@@ -77,6 +77,8 @@ namespace mongodb.repositories
         catch(Exception)
         {
           await session.AbortTransactionAsync();
+          if(attempt == maxRetries)
+            throw;
         }
       }
 
@@ -91,7 +93,7 @@ namespace mongodb.repositories
       {
         throw new Exception("Invalid account");
       }
-      else if(account.Balance < Math.Abs(amount))
+      else if(amount < 0 && account.Balance < Math.Abs(amount))
       {
         throw new Exception("Insufficient funds");
       }

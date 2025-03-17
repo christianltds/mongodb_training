@@ -49,6 +49,8 @@ namespace mongodb.repositories
         using var session = await Collection.Database.Client.StartSessionAsync();
         try
         {
+          session.StartTransaction();
+
           var fromFilter = Builders<BsonDocument>.Filter.Eq("accountid", fromAccount);
           var toFilter = Builders<BsonDocument>.Filter.Eq("accountid", toAccount);
           var fromUpdate = Builders<BsonDocument>.Update.Inc("balance", -amount);
@@ -72,6 +74,8 @@ namespace mongodb.repositories
         catch(Exception)
         {
           await session.AbortTransactionAsync();
+          if(attempt == maxRetries)
+            throw;
         }
       }
 
@@ -86,7 +90,7 @@ namespace mongodb.repositories
       {
         throw new Exception("Invalid account");
       }
-      else if(account["balance"].AsDouble < Math.Abs(amount))
+      else if(amount < 0 && account["balance"].AsDouble < Math.Abs(amount))
       {
         throw new Exception("Insufficient funds");
       }

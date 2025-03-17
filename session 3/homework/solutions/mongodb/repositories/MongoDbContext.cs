@@ -8,7 +8,6 @@ namespace mongodb.repositories
   public class MongoDbContext
   {
     private readonly IMongoDatabase _database;
-    private readonly IMongoClient _client;
 
     public MongoDbContext(string connectionString, string databaseName, bool logToConsole = false)
     {
@@ -20,8 +19,8 @@ namespace mongodb.repositories
           .Subscribe<CommandStartedEvent>(e => Console.WriteLine($"MongoDB Command: {e.CommandName} - {e.Command.ToJson()}"));
       }
 
-      _client = new MongoClient(settings);
-      _database = _client.GetDatabase(databaseName);
+      var client = new MongoClient(settings);
+      _database = client.GetDatabase(databaseName);
       CreateIndexes().GetAwaiter().GetResult();
     }
 
@@ -38,7 +37,7 @@ namespace mongodb.repositories
       var indexOptions = new CreateIndexOptions { Unique = true };
       var indexModel = new CreateIndexModel<Account>(indexKeys, indexOptions);
 
-      await _client.GetDatabase("bank").GetCollection<Account>("accounts").Indexes.CreateOneAsync(indexModel);
+      await _database.GetCollection<Account>("accounts").Indexes.CreateOneAsync(indexModel);
 
       var indexModels = new List<CreateIndexModel<Transaction>>
       {
@@ -46,7 +45,7 @@ namespace mongodb.repositories
           new(Builders<Transaction>.IndexKeys.Ascending(t => t.TransactionDate))
       };
 
-      await _client.GetDatabase("bank").GetCollection<Transaction>("transactions").Indexes.CreateManyAsync(indexModels);
+      await _database.GetCollection<Transaction>("transactions").Indexes.CreateManyAsync(indexModels);
     }
   }
 }

@@ -2,6 +2,7 @@ using mongodb.apis;
 using mongodb.documents;
 using mongodb.repositories;
 using mongodb.services;
+using MongoDB.Bson;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,6 +31,8 @@ builder.Services
 
           return new MongoDbContext(connectionString, "bank", true);
         })
+    //.AddScoped<IAccountService, BsonDocumentService>()
+    //.AddScoped<IAccountRepository<BsonDocument>, BsonDocumentRepository>()
     .AddScoped<IAccountService, AccountService>()
     .AddScoped<IAccountRepository<Account>, AccountRepository>()
     .AddScoped<ITransactionRepository, TransactionRepository>();
