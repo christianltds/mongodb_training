@@ -1,22 +1,52 @@
 using mongodb.documents;
+using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Events;
 
 namespace mongodb.repositories
 {
-    public class MongoDbContext
+  public class MongoDbContext
+  {
+    private readonly IMongoDatabase _database;
+    private readonly IMongoClient _client;
+
+    public MongoDbContext(string connectionString, string databaseName, bool logToConsole = false)
     {
-        private readonly IMongoDatabase _database;
+      var settings = MongoClientSettings.FromConnectionString(connectionString);
+      if(logToConsole)
+      {
+        settings.ClusterConfigurator = builder =>
+          builder
+          .Subscribe<CommandStartedEvent>(e => Console.WriteLine($"MongoDB Command: {e.CommandName} - {e.Command.ToJson()}"));
+      }
 
-        public MongoDbContext(string connectionString, string databaseName)
-        {
-            var client = new MongoClient(connectionString);
-            _database = client.GetDatabase(databaseName);
-        }
-
-        public IMongoCollection<TDocument> GetCollection<TDocument>(string collectionName)
-            where TDocument : class
-        {
-            return _database.GetCollection<TDocument>(collectionName);
-        }
+      _client = new MongoClient(settings);
+      _database = _client.GetDatabase(databaseName);
+      CreateIndexes().GetAwaiter().GetResult();
     }
+
+    public IMongoCollection<TDocument> GetCollection<TDocument>(string collectionName)
+        where TDocument : class
+    {
+      return _database.GetCollection<TDocument>(collectionName);
+    }
+
+    public async Task CreateIndexes()
+    {
+
+      var indexKeys = Builders<Account>.IndexKeys.Ascending(acc => acc.AccountId);
+      var indexOptions = new CreateIndexOptions { Unique = true };
+      var indexModel = new CreateIndexModel<Account>(indexKeys, indexOptions);
+
+      await _client.GetDatabase("bank").GetCollection<Account>("accounts").Indexes.CreateOneAsync(indexModel);
+
+      var indexModels = new List<CreateIndexModel<Transaction>>
+      {
+          new(Builders<Transaction>.IndexKeys.Ascending(t => t.AccountId).Ascending(t => t.TargetAccountId)),
+          new(Builders<Transaction>.IndexKeys.Ascending(t => t.TransactionDate))
+      };
+
+      await _client.GetDatabase("bank").GetCollection<Transaction>("transactions").Indexes.CreateManyAsync(indexModels);
+    }
+  }
 }

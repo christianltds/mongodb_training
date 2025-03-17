@@ -2,13 +2,13 @@ using MongoDB.Driver;
 
 namespace mongodb.repositories
 {
-    public abstract class BaseRepository<TDocument> where TDocument : class
-    {
-        protected IMongoCollection<TDocument> Collection { get; }
+  public abstract class BaseRepository<TDocument> where TDocument : class
+  {
+    protected IMongoCollection<TDocument> Collection { get; }
 
-        public BaseRepository(MongoDbContext context, string collectionName)
-        {
-            Collection = context.GetCollection<TDocument>(collectionName);
-        }
+    protected BaseRepository(MongoDbContext context, string collectionName)
+    {
+      Collection = context.GetCollection<TDocument>(collectionName);
     }
+  }
 }

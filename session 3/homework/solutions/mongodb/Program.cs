@@ -1,8 +1,8 @@
-using System.Text.Json.Serialization;
 using mongodb.apis;
 using mongodb.documents;
 using mongodb.repositories;
 using mongodb.services;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,18 +11,24 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
-    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+  options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 builder.Services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
 {
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+  options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
 builder.Services
     .AddSingleton(sp =>
         {
-            var connectionString = Environment.GetEnvironmentVariable("MONGODB_URI");
-            return new MongoDbContext(connectionString, "bank");
+          var connectionString = Environment.GetEnvironmentVariable("MONGODB_URI");
+
+          if(connectionString == null)
+          {
+            throw new ArgumentException($"MONGODB_URI environment variable is missing and is required.");
+          }
+
+          return new MongoDbContext(connectionString, "bank", true);
         })
     .AddScoped<IAccountService, AccountService>()
     .AddScoped<IAccountRepository<Account>, AccountRepository>()
@@ -31,10 +37,10 @@ builder.Services
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if(app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+  app.UseSwagger();
+  app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

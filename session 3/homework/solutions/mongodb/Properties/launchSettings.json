@@ -4,21 +4,23 @@
     "http": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": false,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
       "applicationUrl": "http://localhost:5067",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "MONGODB_URI": "https://localhost:27017"
+        "MONGODB_URI": "mongodb://localhost:27017/"
       }
     },
     "https": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": false,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
       "applicationUrl": "https://localhost:7147;http://localhost:5067",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "MONGODB_URI": "https://localhost:27017"
+        "MONGODB_URI": "mongodb://localhost:27017/"
       }
     }
   }
