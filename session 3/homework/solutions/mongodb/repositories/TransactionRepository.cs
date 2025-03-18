@@ -42,7 +42,7 @@ namespace mongodb.repositories
     {
       var transactionQueryable = Collection.AsQueryable();
       var query = transactionQueryable
-          .Where(transaction => transaction.AccountId == accountId)
+          .Where(transaction => transaction.AccountId == accountId || transaction.TargetAccountId == accountId)
           .GroupJoin(_accountCollection,
               transaction => transaction.TargetAccountId,
               account => account.AccountId,

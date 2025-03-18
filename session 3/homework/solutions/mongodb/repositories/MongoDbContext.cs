@@ -12,15 +12,16 @@ namespace mongodb.repositories
     public MongoDbContext(string connectionString, string databaseName, bool logToConsole = false)
     {
       var settings = MongoClientSettings.FromConnectionString(connectionString);
+
       if(logToConsole)
       {
         settings.ClusterConfigurator = builder =>
-          builder
-          .Subscribe<CommandStartedEvent>(e => Console.WriteLine($"MongoDB Command: {e.CommandName} - {e.Command.ToJson()}"));
+          builder.Subscribe<CommandStartedEvent>(e => Console.WriteLine($"MongoDB Command: {e.CommandName} - {e.Command.ToJson()}"));
       }
 
       var client = new MongoClient(settings);
       _database = client.GetDatabase(databaseName);
+
       CreateIndexes().GetAwaiter().GetResult();
     }
 
